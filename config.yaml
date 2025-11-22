@@ -18,12 +18,17 @@ trading:
   symbols:
     - "BTCUSDT"
     - "ETHUSDT"
+    - "XRPUSDT"
+    - "BNBUSDT"
+    - "SOLUSDT"
+    - "DOGEUSDT"
+    - "HYPEUSDT"
   
-  timeframe: "15m"
+  timeframe: "5m"
 
   # Lookback period for calculating Z-score, in number of data points
-  volume_lookback_period: 96 # 96 * 15 minutes = 1 day
-  ls_ratio_lookback_period: 96
+  volume_lookback_period: 288 # 288 * 5 minutes = 1 day
+  ls_ratio_lookback_period: 288
 
   # Number of recent data points to fetch from Binance
   data_fetch_limit: 200
