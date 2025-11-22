@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, message=".*pkg_resources is deprecated.*")
+
 import time
 import schedule
 from datetime import datetime
