@@ -77,7 +77,11 @@ def get_binance_data(symbol: str):
         df = df.reindex(all_indices)
         # Force conversion of all possible columns to numeric types to avoid interpolation warning
         for col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='ignore')
+            try:
+                df[col] = pd.to_numeric(df[col])
+            except (ValueError, TypeError):
+                # This column cannot be converted to numeric, so we skip it.
+                pass
         
         df = df.interpolate(method='time').bfill().ffill()
         log.debug(f"Successfully fetched and processed data for {symbol}")
