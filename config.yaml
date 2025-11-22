@@ -8,7 +8,7 @@ lark:
 gemini:
   api_key: "YOUR_GEMINI_API_KEY"
   model_name: "gemini-2.5-flash"
-  base_url: "https://api.uykb.eu.org/v1" # Optional, for custom endpoints
+  base_url: "https://gemini.uykb.eu.org/v1" # Optional, for custom endpoints
 
 schedule:
   check_interval_minutes: 5
