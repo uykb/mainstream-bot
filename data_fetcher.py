@@ -74,7 +74,12 @@ def get_binance_data(symbol: str):
         if not ls_df.empty:
             all_indices = all_indices.union(ls_df.index)
         
-        df = df.reindex(all_indices).infer_objects(copy=False).interpolate(method='time').bfill().ffill()
+        df = df.reindex(all_indices)
+        # Force conversion of all possible columns to numeric types to avoid interpolation warning
+        for col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='ignore')
+        
+        df = df.interpolate(method='time').bfill().ffill()
         log.debug(f"Successfully fetched and processed data for {symbol}")
         return df
 

@@ -11,7 +11,7 @@ gemini:
   base_url: "https://api.uykb.eu.org/v1" # Optional, for custom endpoints
 
 schedule:
-  check_interval_minutes: 15
+  check_interval_minutes: 5
 
 # For more advanced tuning, you can adjust these parameters
 trading:
