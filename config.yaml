@@ -31,7 +31,7 @@ trading:
   ls_ratio_lookback_period: 288
 
   # Number of recent data points to fetch from Binance
-  data_fetch_limit: 200
+  data_fetch_limit: 300
 
   # --- Alerting Thresholds ---
   # Adjust these thresholds to control alert sensitivity.
