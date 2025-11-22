@@ -1,16 +1,31 @@
 import json
 from openai import OpenAI
-from config import GEMINI_API_KEY, GEMINI_MODEL_NAME, GEMINI_API_BASE_URL
+from config_loader import cfg
+from logger import log
 
-client = OpenAI(
-    api_key=GEMINI_API_KEY,
-    base_url=GEMINI_API_BASE_URL,
-)
+# --- 使用新的配置 ---
+GEMINI_API_KEY = cfg['gemini']['api_key']
+GEMINI_MODEL_NAME = cfg['gemini']['model_name']
+GEMINI_API_BASE_URL = cfg['gemini'].get('base_url') # Use .get() for optional keys
+
+# 只有在提供了API密钥和基础URL时才初始化客户端
+client = None
+if GEMINI_API_KEY and GEMINI_API_KEY != "YOUR_GEMINI_API_KEY" and GEMINI_API_BASE_URL:
+    client = OpenAI(
+        api_key=GEMINI_API_KEY,
+        base_url=GEMINI_API_BASE_URL,
+    )
+elif GEMINI_API_KEY and GEMINI_API_KEY != "YOUR_GEMINI_API_KEY":
+    client = OpenAI(api_key=GEMINI_API_KEY)
 
 def get_gemini_interpretation(symbol: str, timeframe: str, signal_data: dict, previous_signal: dict = None):
     """
     使用自定义的 OpenAI 兼容 API 解读指标异动信号及其市场背景
     """
+    if not client:
+        log.warning("Gemini client not initialized. Check API key. Returning default message.")
+        return "AI interpretation is disabled because the Gemini API key is not configured."
+
     # 为了可读性，将数据包拆分
     primary_signal = signal_data.get('primary_signal', {})
     market_context = signal_data.get('market_context', {})
@@ -19,9 +34,9 @@ def get_gemini_interpretation(symbol: str, timeframe: str, signal_data: dict, pr
 
 Your Task is to analyze the primary signal in conjunction with the broader market context provided. Structure your interpretation in the following format, and your entire analysis must be in Chinese:
 
-【核心信号解读】What does the specific primary signal mean in technical terms? (e.g., "A volume Z-Score of 3.5 indicates an extreme deviation from the recent average, suggesting a major market participant's activity.")
-【市场背景分析】How does the market context (recent price action, key indicators, CVD) support or contradict the primary signal? (e.g., "This volume spike is occurring as the price is testing a key resistance level identified by the EMA_26, and the RSI is approaching overbought territory. The recent CVD trend has been flat, suggesting this may be a climactic top rather than a breakout.")
-【潜在影响与后续关注】What is the most likely short-term impact, and what specific price levels or indicator behaviors should be monitored for confirmation or invalidation? (e.g., "Potential for a short-term reversal. Watch for a price rejection at the $68,200 level. Confirmation would be a bearish divergence on the RSI on the next price swing.")
+【核心信号解读】What does the specific primary signal mean in technical terms? (e.g., \"A volume Z-Score of 3.5 indicates an extreme deviation from the recent average, suggesting a major market participant's activity.\")
+【市场背景分析】How does the market context (recent price action, key indicators, CVD) support or contradict the primary signal? (e.g., \"This volume spike is occurring as the price is testing a key resistance level identified by the EMA_26, and the RSI is approaching overbought territory. The recent CVD trend has been flat, suggesting this may be a climactic top rather than a breakout.\")
+【潜在影响与后续关注】What is the most likely short-term impact, and what specific price levels or indicator behaviors should be monitored for confirmation or invalidation? (e.g., \"Potential for a short-term reversal. Watch for a price rejection at the $68,200 level. Confirmation would be a bearish divergence on the RSI on the next price swing.\")
 """
 
     # 将K线数据格式化为更易读的字符串
@@ -64,6 +79,7 @@ This is a new signal alert.
 """
 
     try:
+        log.debug(f"Calling Gemini API for {symbol}...")
         response = client.chat.completions.create(
             model=GEMINI_MODEL_NAME,
             messages=[
@@ -72,7 +88,9 @@ This is a new signal alert.
             ],
             temperature=0.6, # 稍微提高一点创造性以进行更好的分析
         )
-        return response.choices[0].message.content
+        interpretation = response.choices[0].message.content
+        log.debug(f"Successfully received Gemini interpretation for {symbol}.")
+        return interpretation
     except Exception as e:
-        print(f"Error calling custom API: {e}")
-        return "AI interpretation failed."
+        log.error(f"Error calling Gemini API for {symbol}: {e}", exc_info=True)
+        return "AI interpretation failed due to an API error."

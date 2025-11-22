@@ -6,8 +6,10 @@ dependencies:
   - pip
   - requests
   - pandas
-  - python-dotenv
   - schedule
   - pandas-ta
+  - pyyaml # For parsing config.yaml
+  - tenacity # For retry logic
+  - loguru # For structured logging
   - pip:
     - openai

@@ -1,15 +1,19 @@
 import requests
 import json
 from datetime import datetime
-from config import LARK_WEBHOOK_URL
+from config_loader import cfg
+from logger import log
+
+# --- 使用新的配置 ---
+LARK_WEBHOOK_URL = cfg['lark']['webhook_url']
 
 def send_lark_alert(symbol: str, signal_data: dict, ai_interpretation: str):
     """
     构建并发送一个精美的 Lark 卡片消息
     """
     webhook_url = LARK_WEBHOOK_URL
-    if not webhook_url:
-        print("Lark webhook URL not set.")
+    if not webhook_url or webhook_url == "YOUR_LARK_WEBHOOK_URL":
+        log.warning("Lark webhook URL not set or is a placeholder. Skipping alert.")
         return
 
     primary_signal = signal_data.get('primary_signal', {})
@@ -86,6 +90,6 @@ def send_lark_alert(symbol: str, signal_data: dict, ai_interpretation: str):
     try:
         response = requests.post(webhook_url, data=json.dumps(payload), headers={'Content-Type': 'application/json'})
         response.raise_for_status()
-        print("Lark alert sent successfully.")
+        log.info(f"Lark alert for {symbol} sent successfully.")
     except requests.exceptions.RequestException as e:
-        print(f"Error sending Lark alert: {e}")
+        log.error(f"Error sending Lark alert for {symbol}: {e}")

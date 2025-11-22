@@ -1,0 +1,51 @@
+binance:
+  api_key: "YOUR_BINANCE_API_KEY"
+  api_secret: "YOUR_BINANCE_API_SECRET"
+
+lark:
+  webhook_url: "YOUR_LARK_WEBHOOK_URL"
+
+gemini:
+  api_key: "YOUR_GEMINI_API_KEY"
+  model_name: "gemini-2.5-flash"
+  base_url: "https://api.uykb.eu.org/v1" # Optional, for custom endpoints
+
+schedule:
+  check_interval_minutes: 15
+
+# For more advanced tuning, you can adjust these parameters
+trading:
+  symbols:
+    - "BTCUSDT"
+    - "ETHUSDT"
+  
+  timeframe: "15m"
+
+  # Lookback period for calculating Z-score, in number of data points
+  volume_lookback_period: 96 # 96 * 15 minutes = 1 day
+  ls_ratio_lookback_period: 96
+
+  # Number of recent data points to fetch from Binance
+  data_fetch_limit: 200
+
+  # --- Alerting Thresholds ---
+  # Adjust these thresholds to control alert sensitivity.
+  # Lower values make alerts more frequent; higher values make them less frequent.
+  thresholds:
+    # Z-score for volume anomalies. Default: 3.0 (3 standard deviations from the mean)
+    volume_z_score: 3.0
+
+    # Sudden percentage change in Open Interest. Default: 5% (0.05)
+    oi_sudden_change: 0.05 
+
+    # Z-score for Long/Short ratio anomalies. Default: 3.0
+    ls_ratio_z_score: 3.0
+
+    # Threshold for how much a Z-score must change to be considered a new signal
+    z_score_change: 0.5
+
+    # Threshold for how much a percentage-based signal (like OI change) must change
+    percentage_change: 0.05 # 5%
+
+# State file path
+state_file_path: "bot_state.json"
