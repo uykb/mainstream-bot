@@ -1,48 +1,54 @@
-name: Docker Image CI
+name: Docker Publish CI
 
+# 1. 触发条件：当代码被推送到 main 分支时触发此工作流
 on:
   push:
-    branches:
-      - "main"
-      - "stable"
-  pull_request:
     branches: [ "main" ]
 
 jobs:
-  build_and_publish:
+  build-and-push-image:
+    # 运行环境
     runs-on: ubuntu-latest
+    
+    # 2. 权限设置：为工作流授予推送到 ghcr.io 的权限
     permissions:
-      contents: read
-      packages: write
-
+      contents: read       # 授予读取代码仓库内容的权限
+      packages: write      # 授予写入(推送) packages 的权限 (关键修复)
+      
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # 步骤一：检出代码
+      # 使用 actions/checkout 拉取你的代码到运行环境中
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Log in to the GitHub Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      # 步骤二：登录到 GitHub Container Registry
+      # 使用官方的 docker/login-action 动作
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          # github.actor 是触发工作流的用户名
+          # secrets.GITHUB_TOKEN 是由 GitHub Actions 自动创建的临时令牌
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ghcr.io/${{ github.repository_owner }}/oi-bot
-        tags: |
-          # For pushes to the main branch, use 'latest' tag
-          type=raw,value=latest,enable={{is_default_branch}}
-          # For pushes to any other branch (e.g., stable), use the branch name as the tag
-          type=ref,event=branch
-          # For pull requests, use 'pr-' followed by the PR number
-          type=ref,event=pr
+      # 步骤三：提取 Docker 元数据
+      # 这个步骤会自动生成镜像的标签，例如 'latest', 'main', 以及 commit SHA
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+      # 步骤四：构建并推送 Docker 镜像
+      # 使用官方的 docker/build-push-action 动作
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          # push: true 表示在构建成功后推送到仓库
+          push: true
+          # 使用上一步生成的标签
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
