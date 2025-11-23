@@ -7,6 +7,7 @@ from logger import log
 # --- 使用新的配置 ---
 Z_SCORE_CHANGE_THRESHOLD = cfg['trading']['thresholds']['z_score_change']
 PERCENTAGE_CHANGE_THRESHOLD = cfg['trading']['thresholds']['percentage_change']
+RESEND_INTERVAL_MINUTES = cfg['schedule']['resend_interval_minutes']
 STATE_FILE_PATH = cfg['state_file_path']
 
 class SignalStateManager:
@@ -49,7 +50,15 @@ class SignalStateManager:
             return True, None
 
         last_signal_data = last_signal_info['signal_data']['primary_signal']
+        last_timestamp = last_signal_info.get('timestamp', 0)
         current_signal_data = signal['primary_signal']
+
+        # 检查是否超过了强制重发时间
+        time_since_last_alert = (time.time() - last_timestamp) / 60
+        if time_since_last_alert > RESEND_INTERVAL_MINUTES:
+            log.info(f"Signal {unique_key} has persisted for {time_since_last_alert:.1f} minutes. Resending.")
+            self._update_state(unique_key, signal)
+            return True, last_signal_data
 
         is_significant_change = False
 

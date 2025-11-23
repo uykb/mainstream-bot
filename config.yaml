@@ -12,6 +12,8 @@ gemini:
 
 schedule:
   check_interval_minutes: 5
+  # How long to wait before resending a persistent alert (in minutes)
+  resend_interval_minutes: 60
 
 # For more advanced tuning, you can adjust these parameters
 trading:
