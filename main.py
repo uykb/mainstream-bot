@@ -36,7 +36,9 @@ def run_check():
         for checker in indicator_checkers:
             signal = checker.check(df, symbol)
             if signal:
-                log.info(f"为 {symbol} 找到潜在信号: {signal['primary_signal']}")
+                # 发现信号时，使用 warning 级别记录，以便引起注意
+                log.warning(f"为 {symbol} 找到潜在信号: {signal['primary_signal']}")
+                
                 # 检查是否应该发送警报
                 should_send, prev_signal = state_manager.should_send_alert(symbol, signal)
                 if should_send:
