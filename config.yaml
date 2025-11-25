@@ -13,7 +13,7 @@ gemini:
 schedule:
   check_interval_minutes: 5
   # How long to wait before resending a persistent alert (in minutes)
-  resend_interval_minutes: 60
+  resend_interval_minutes: 30  # 从 60 分钟缩短到 30 分钟，使持续信号更快重发
 
 # For more advanced tuning, you can adjust these parameters
 trading:
@@ -49,7 +49,7 @@ trading:
     ls_ratio_z_score: 3.0
 
     # Threshold for how much a Z-score must change to be considered a new signal
-    z_score_change: 0.5
+    z_score_change: 0.1  # 从 0.5 降低到 0.1，使信号更容易被识别为"显著变化"
 
     # Threshold for how much a percentage-based signal (like OI change) must change
     percentage_change: 0.05 # 5%
